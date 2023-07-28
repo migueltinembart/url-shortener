@@ -1,14 +1,40 @@
-import express from "express";
+import Fastify from "fastify";
 import { URLs } from "./schema/schema";
 import { db } from "./client";
 import { InferModel } from "drizzle-orm";
 import { migrateDB } from "./migrate";
+import fastify from "fastify";
 
-type URL = InferModel<typeof URLs, "insert">;
+const server = Fastify({ logger: true });
 
-async () => await migrateDB();
+server.post("/addUrl", async (req, res) => {
+  return db.insert(URLs).values(
+    {
+      id: URLs.id.default,
+      urlTarget: "https://random.com/random",
+      urlShort: "http://localhost:5000",
+      createdAt: URLs.createdAt.default,
+      updatedAt: URLs.updatedAt.default,
 
-const server = express();
+    }
+  )
+})
+
+server.get("/", async (req, res) => {
+  return db.select().from(URLs);
+});
+
+async function run() {
+  try {
+    await server.listen({ port: 3000 });
+  } catch (e) {
+    server.log.error(e);
+    process.exit(1);
+  }
+}
+
+run();
+/*
 
 server.post("/add", async (req, res, next) => {
   try {
@@ -31,3 +57,5 @@ server.get("/", async (req, res) => {
 server.listen("5000", () => {
   console.log("Interface listening on http://localhost:5000");
 });
+
+*/

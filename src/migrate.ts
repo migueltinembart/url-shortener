@@ -1,15 +1,12 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
+import { config } from "../config";
 
 export async function migrateDB() {
   const connectionString = process.env.CONNECTION_STRING;
 
-  if (typeof connectionString != "string") {
-    throw new Error("No connections string passed to config");
-  }
-
-  const sql = postgres(connectionString, { max: 1, ssl: "require" });
+  const sql = postgres(config.CONNECTION_STRING, { max: 1, ssl: "require" });
   const migrator = drizzle(sql);
   try {
     await migrate(migrator, { migrationsFolder: "drizzle" });
